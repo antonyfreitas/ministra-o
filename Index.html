@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bem-Estar e Ministração - Ala Ipanema</title>
+<style>
+  :root {
+    --canvas: #0f1416;
+    --surface: #151d20;
+    --surface-soft: #1d292d;
+    --primary: #006184;
+    --primary-glow: #49cce6;
+    --cyan: #6bdff0;
+    --green: #93c742;
+    --gold: #ffb81c;
+    --rose: #bd0057;
+    --ink: #f7f8f8;
+    --muted: #b8c3c7;
+    --hairline: rgba(135, 138, 140, .38);
+    --shadow: 0 24px 70px rgba(0, 0, 0, .34);
+    --radius: 16px;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 14% 8%, rgba(73, 204, 230, .16), transparent 28rem),
+      radial-gradient(circle at 88% 2%, rgba(147, 199, 66, .12), transparent 24rem),
+      linear-gradient(145deg, #0f1416 0%, #10191d 48%, #071215 100%);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.024) 1px, transparent 1px);
+    background-size: 24px 24px;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,.9), transparent 78%);
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background: repeating-linear-gradient(to bottom, rgba(255,255,255,.025), rgba(255,255,255,.025) 1px, transparent 1px, transparent 5px);
+    opacity: .3;
+  }
+
+  .shell {
+    position: relative;
+    z-index: 2;
+    width: min(100%, 760px);
+    margin: 0 auto;
+    padding: 18px 14px 44px;
+  }
+
+  .hero {
+    min-height: 92dvh;
+    display: grid;
+    align-content: end;
+    gap: 18px;
+    padding: 28px 4px 24px;
+  }
+
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--cyan);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .mark {
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(73, 204, 230, .65);
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    color: var(--ink);
+    background: linear-gradient(135deg, rgba(0, 97, 132, .85), rgba(73, 204, 230, .18));
+    box-shadow: 0 0 28px rgba(73, 204, 230, .22);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(2.35rem, 13vw, 5.6rem);
+    line-height: .9;
+    letter-spacing: 0;
+    text-wrap: balance;
+  }
+
+  .intro {
+    margin: 0;
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 42rem;
+  }
+
+  .quick-facts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .fact, .section-card, .question-card, .success-card {
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    background: rgba(21, 29, 32, .82);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(16px);
+  }
+
+  .fact {
+    min-height: 76px;
+    padding: 12px;
+  }
+
+  .fact span {
+    display: block;
+    color: var(--cyan);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .fact strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 18px;
+    line-height: 1.1;
+  }
+
+  .start-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .btn {
+    min-height: 48px;
+    border: 1px solid rgba(73, 204, 230, .55);
+    border-radius: 8px;
+    padding: 13px 16px;
+    color: var(--ink);
+    background: linear-gradient(135deg, var(--primary), #007da5);
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    box-shadow: 0 0 22px rgba(73, 204, 230, .18);
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  }
+
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 0 30px rgba(73, 204, 230, .28); }
+  .btn:active { transform: translateY(1px); }
+
+  .ghost {
+    background: rgba(247, 248, 248, .04);
+    color: var(--cyan);
+  }
+
+  .progress-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    margin: 0 -14px 20px;
+    padding: 10px 14px;
+    background: rgba(15, 20, 22, .88);
+    border-bottom: 1px solid var(--hairline);
+    backdrop-filter: blur(14px);
+  }
+
+  .progress-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .progress-track {
+    height: 8px;
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    background: rgba(255,255,255,.06);
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    width: 4%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--green), var(--primary-glow));
+    transition: width .25s ease;
+  }
+
+  form { display: grid; gap: 18px; }
+
+  .section-card {
+    display: none;
+    overflow: hidden;
+    animation: rise .5s ease both;
+  }
+
+  .section-card.active { display: block; }
+
+  .section-head {
+    padding: 18px 16px;
+    border-bottom: 1px solid var(--hairline);
+    background: linear-gradient(135deg, rgba(0, 97, 132, .45), rgba(147, 199, 66, .08));
+  }
+
+  .section-kicker {
+    color: var(--cyan);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    margin: 5px 0 0;
+    font-size: 1.35rem;
+    line-height: 1.1;
+  }
+
+  .questions {
+    display: grid;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .question-card {
+    display: none;
+    padding: 14px;
+    box-shadow: none;
+    background: rgba(247, 248, 248, .045);
+    transform: translateZ(0);
+    transition: border-color .2s ease, background .2s ease, transform .2s ease;
+  }
+
+  .question-card.active {
+    display: block;
+    animation: questionIn .34s ease both;
+  }
+
+  .question-card.invalid {
+    border-color: rgba(189, 0, 87, .9);
+    background: rgba(189, 0, 87, .1);
+    animation: shake .28s ease both;
+  }
+
+  .question-card:focus-within {
+    border-color: rgba(73, 204, 230, .9);
+    background: rgba(73, 204, 230, .08);
+    transform: translateY(-1px);
+  }
+
+  label.prompt {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    font-weight: 750;
+  }
+
+  .hint {
+    display: block;
+    margin-top: -5px;
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .question-error {
+    display: none;
+    margin-top: 10px;
+    color: #ff9dbb;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .question-card.invalid .question-error {
+    display: block;
+  }
+
+  input[type="text"], textarea, select {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    padding: 13px 12px;
+    color: var(--ink);
+    background: rgba(7, 18, 21, .78);
+    font: inherit;
+  }
+
+  textarea { min-height: 108px; resize: vertical; }
+  select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--cyan) 50%), linear-gradient(135deg, var(--cyan) 50%, transparent 50%); background-position: calc(100% - 18px) 21px, calc(100% - 12px) 21px; background-size: 6px 6px; background-repeat: no-repeat; }
+
+  input:focus, textarea:focus, select:focus {
+    outline: 2px solid rgba(73, 204, 230, .5);
+    outline-offset: 2px;
+  }
+
+  .option-grid {
+    display: grid;
+    gap: 8px;
+  }
+
+  .option {
+    position: relative;
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 9px;
+    align-items: start;
+    min-height: 48px;
+    padding: 12px;
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    background: rgba(255,255,255,.04);
+    cursor: pointer;
+    transition: border-color .2s ease, background .2s ease;
+  }
+
+  .option:has(input:checked) {
+    border-color: rgba(147, 199, 66, .95);
+    background: rgba(147, 199, 66, .13);
+  }
+
+  .option input {
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0;
+    accent-color: var(--green);
+  }
+
+  .scale-group {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .scale-group .option {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    min-height: 58px;
+    padding: 10px 4px;
+    font-weight: 800;
+  }
+
+  .other-input {
+    display: none;
+    margin-top: 8px;
+  }
+
+  .closing-actions {
+    display: none;
+    gap: 10px;
+    padding: 4px 2px 0;
+  }
+
+  .closing-actions.active {
+    display: grid;
+  }
+
+  .form-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 2px;
+  }
+
+  .form-nav.single {
+    grid-template-columns: 1fr;
+  }
+
+  .step-note {
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .privacy-note {
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .success-card {
+    display: none;
+    margin-top: 24px;
+    padding: 28px 18px;
+    text-align: center;
+    animation: rise .45s ease both;
+  }
+
+  .success-card h2 { color: var(--green); }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes questionIn {
+    from { opacity: 0; transform: translateX(24px) scale(.985); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 22px rgba(73, 204, 230, .18); }
+    50% { box-shadow: 0 0 34px rgba(73, 204, 230, .32); }
+  }
+
+  .btn:not(.ghost) {
+    animation: glowPulse 3.2s ease-in-out infinite;
+  }
+
+  @media (min-width: 680px) {
+    .shell { padding-top: 28px; }
+    .hero { min-height: 78dvh; }
+    .start-row { grid-template-columns: 1fr 1fr; }
+    .questions { padding: 16px; }
+    .question-card { padding: 16px; }
+    .option-grid.two { grid-template-columns: 1fr 1fr; }
+    .closing-actions { grid-template-columns: 1fr 1fr; align-items: center; }
+    .privacy-note { text-align: left; }
+    .form-nav { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; scroll-behavior: auto !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <script>var submitted = false;</script>
+  <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted) { document.getElementById('form-container').style.display='none'; document.getElementById('success-message').style.display='block'; window.scrollTo(0,0); }"></iframe>
+
+  <section class="hero">
+    <div class="brand-row"><span class="mark">Ala</span><span>Ala Ipanema</span></div>
+    <h1>Bem-Estar e Ministração</h1>
+    <p class="intro">Uma pesquisa breve para entender necessidades reais, fortalecer a ministração e organizar apoio com mais carinho e precisão.</p>
+    <div class="start-row">
+      <a class="btn" href="#form-container" id="start-survey">Começar pesquisa</a>
+      <a class="btn ghost" href="#sec-ministerio" id="jump-ministering">Ir para ministração</a>
+    </div>
+  </section>
+
+  <div id="success-message" class="success-card">
+    <h2>Muito obrigado</h2>
+    <p>Suas respostas foram registradas com segurança. Elas ajudarão o Bispado e os líderes da Ala Ipanema a apoiar melhor cada pessoa e família.</p>
+  </div>
+
+  <div id="form-container">
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <span id="progress-label">Pergunta 1</span>
+        <span id="progress-count">0%</span>
+      </div>
+      <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+    </div>
+
+    <form action="https://docs.google.com/forms/d/e/1FAIpQLSdTUyVVPbwZX11OcsLsiW7m-TLzFgoIBxp4_16EhJ1CpJKz_w/formResponse" method="POST" target="hidden_iframe" novalidate>
+      <input type="hidden" name="fvv" value="1" />
+      <input type="hidden" name="pageHistory" value="0" />
+      <input type="hidden" name="fbzx" value="3198595119736030872" />
+      <input type="hidden" name="submissionTimestamp" value="-1" />
+      <section class="section-card">
+        <div class="section-head">
+          <div class="section-kicker">Seção 1</div>
+          <h2>Informações básicas</h2>
+        </div>
+        <div class="questions">
+          <div class="question-card">
+            <label class="prompt" for="nome">Qual é o seu nome?</label>
+            <span class="hint">Opcional. Pode deixar em branco se preferir anonimato.</span>
+            <input type="text" id="nome" name="entry.1650923594" placeholder="Seu nome, se desejar" />
+            <div class="question-error">Revise esta resposta.</div>
+          </div>
+          <div class="question-card">
+            <label class="prompt" for="comunicados">Como você prefere receber anúncios e comunicados da Ala?</label>
+            <select id="comunicados" name="entry.198971852" required>
+              <option value="" disabled selected>Escolha uma opção</option>
+              <option value="Grupo do WhatsApp da Ala">Grupo do WhatsApp da Ala</option>
+              <option value="Mensagem direta (privada)">Mensagem direta (privada)</option>
+              <option value="Avisos no domingo durante as reuniões">Avisos no domingo durante as reuniões</option>
+              <option value="E-mail">E-mail</option>
+            </select>
+            <div class="question-error">Escolha uma opção para continuar.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="section-head">
+          <div class="section-kicker">Seção 2</div>
+          <h2>Comunicação e disponibilidade</h2>
+        </div>
+        <div class="questions">
+          <div class="question-card">
+            <label class="prompt">Quando você costuma ter mais disponibilidade?</label>
+            <span class="hint">Pode marcar mais de uma opção.</span>
+            <div class="option-grid">
+              <label class="option"><input type="checkbox" name="entry.1148989303" value="Manhãs (Segunda a Sexta)" required /> Manhãs, segunda a sexta</label>
+              <label class="option"><input type="checkbox" name="entry.1148989303" value="Tardes (Segunda a Sexta)" /> Tardes, segunda a sexta</label>
+              <label class="option"><input type="checkbox" name="entry.1148989303" value="Noites (Segunda a Sexta)" /> Noites, segunda a sexta</label>
+              <label class="option"><input type="checkbox" name="entry.1148989303" value="Sábados pela manhã ou tarde" /> Sábados pela manhã ou tarde</label>
+              <label class="option"><input type="checkbox" name="entry.1148989303" value="Apenas aos domingos" /> Apenas aos domingos</label>
+            </div>
+            <div class="question-error">Marque pelo menos uma opção para continuar.</div>
+          </div>
+          <div class="question-card">
+            <label class="prompt" for="domingo">Qual horário no domingo seria ideal para reuniões ou entrevistas breves?</label>
+            <select id="domingo" name="entry.448807493" required>
+              <option value="" disabled selected>Escolha uma opção</option>
+              <option value="Antes da Reunião Sacramental">Antes da Reunião Sacramental</option>
+              <option value="Logo após o bloco de reuniões">Logo após o bloco de reuniões</option>
+              <option value="No final da tarde / início da noite">No final da tarde / início da noite</option>
+            </select>
+            <div class="question-error">Escolha uma opção para continuar.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card" id="sec-ministerio">
+        <div class="section-head">
+          <div class="section-kicker">Seção 3</div>
+          <h2>A prática da ministração</h2>
+        </div>
+        <div class="questions">
+          <div class="question-card">
+            <label class="prompt">Quão claro é para você o verdadeiro propósito da ministração?</label>
+            <span class="hint">1 = muito confuso, 5 = totalmente claro.</span>
+            <div class="scale-group">
+              <label class="option">1<input type="radio" name="entry.40322760" value="1" required /></label>
+              <label class="option">2<input type="radio" name="entry.40322760" value="2" /></label>
+              <label class="option">3<input type="radio" name="entry.40322760" value="3" /></label>
+              <label class="option">4<input type="radio" name="entry.40322760" value="4" /></label>
+              <label class="option">5<input type="radio" name="entry.40322760" value="5" /></label>
+            </div>
+            <div class="question-error">Escolha um número para continuar.</div>
+          </div>
+          <div class="question-card">
+            <label class="prompt" for="designacao">Qual frase melhor descreve como você enxerga sua designação hoje?</label>
+            <select id="designacao" name="entry.618847975" required>
+              <option value="" disabled selected>Escolha uma opção</option>
+              <option value="Uma responsabilidade espiritual e um privilégio.">Uma responsabilidade espiritual e um privilégio.</option>
+              <option value="Uma obrigação que às vezes me gera ansiedade ou culpa.">Uma obrigação que às vezes gera ansiedade ou culpa.</option>
+              <option value="Algo que eu gostaria de fazer melhor, mas não sei como.">Algo que eu gostaria de fazer melhor, mas não sei como.</option>
+              <option value="Uma tarefa burocrática da Igreja.">Uma tarefa burocrática da Igreja.</option>
+            </select>
+            <div class="question-error">Escolha uma opção para continuar.</div>
+          </div>
+          <div class="question-card">
+            <label class="prompt">Qual é o seu maior desafio para ministrar?</label>
+            <div class="option-grid">
+              <label class="option"><input type="checkbox" name="entry.1333695524" value="Falta de tempo devido a trabalho, estudos ou família." required /> Falta de tempo</label>
+              <label class="option"><input type="checkbox" name="entry.1333695524" value="Sobrecarga com meus próprios problemas pessoais ou emocionais." /> Sobrecarga pessoal ou emocional</label>
+              <label class="option"><input type="checkbox" name="entry.1333695524" value="Não tenho intimidade com as pessoas designadas e sinto vergonha de iniciar o contato." /> Falta de intimidade ou timidez</label>
+              <label class="option"><input type="checkbox" name="entry.1333695524" value="Dificuldade de conciliar agendas com meu companheiro(a) de ministração." /> Conciliar agenda com companheiro(a)</label>
+              <label class="option"><input type="checkbox" name="entry.1333695524" value="As pessoas designadas não são receptivas ou não respondem." /> Famílias não são receptivas</label>
+              <label class="option"><input type="checkbox" name="entry.1333695524" value="__other_option__" data-other="outro_desafio" /> Outro motivo</label>
+            </div>
+            <input type="text" id="outro_desafio" class="other-input" name="entry.1333695524.other_option_response" placeholder="Especifique qual..." />
+            <div class="question-error">Marque pelo menos uma opção para continuar.</div>
+          </div>
+          <div class="question-card">
+            <label class="prompt" for="entrevistas">Sobre as entrevistas trimestrais, o que mais dificulta sua participação?</label>
+            <select id="entrevistas" name="entry.582755850" required>
+              <option value="" disabled selected>Escolha uma opção</option>
+              <option value="Incompatibilidade de horários com os líderes.">Incompatibilidade de horários</option>
+              <option value="Sinto que não tenho nada de relevante para relatar e prefiro evitar.">Sinto que não tenho o que relatar</option>
+              <option value="Esqueço ou não vejo tanta urgência.">Esqueço ou não vejo urgência</option>
+              <option value="Eu participo sempre que sou chamado.">Participo sempre que chamado</option>
+            </select>
+            <div class="question-error">Escolha uma opção para continuar.</div>
+          </div>
+          <div class="question-card">
+            <label class="prompt" for="receber">Como tem sido sua experiência em receber ministração?</label>
+            <select id="receber" name="entry.1066693069" required>
+              <option value="" disabled selected>Escolha uma opção</option>
+              <option value="Tenho recebido contato ou apoio constante e significativo.">Apoio constante e significativo</option>
+              <option value="Recebo contatos esporádicos, geralmente no fim do trimestre.">Contatos esporádicos, geralmente no fim do trimestre</option>
+              <option value="Raramente ou nunca recebo contato.">Raramente ou nunca recebo contato</option>
+              <option value="Não sei quem são meus ministradores.">Não sei quem são meus ministradores</option>
+            </select>
+            <div class="question-error">Escolha uma opção para continuar.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="section-head">
+          <div class="section-kicker">Seção 4</div>
+          <h2>Autossuficiência e apoio mútuo</h2>
+        </div>
+        <div class="questions">
+          <div class="question-card">
+            <label class="prompt" for="trabalho">Qual é sua situação de trabalho atual?</label>
+            <select id="trabalho" name="entry.87681801" required>
+              <option value="" disabled selected>Escolha uma opção</option>
+              <option value="CLT / Servidor Público">CLT / Servidor Público</option>
+              <option value="Empresário(a) / Autônomo">Empresário(a) / Autônomo</option>
+              <option value="Estudante / Estagiário(a)">Estudante / Estagiário(a)</option>
+              <option value="Aposentado(a) ou Do lar">Aposentado(a) ou do lar</option>
+              <option value="Estou buscando emprego">Estou buscando emprego</option>
+            </select>
+            <div class="question-error">Escolha uma opção para continuar.</div>
+          </div>
+          <div class="question-card">
+            <label class="prompt">Tem interesse no Fundo Perpétuo de Educação ou em grupos de Autossuficiência?</label>
+            <div class="option-grid two">
+              <label class="option"><input type="radio" name="entry.617249088" value="Sim" required /> Sim</label>
+              <label class="option"><input type="radio" name="entry.617249088" value="Não" /> Não</label>
+              <label class="option"><input type="radio" name="entry.617249088" value="Preciso de mais informações" /> Preciso de mais informações</label>
+            </div>
+            <div class="question-error">Escolha uma opção para continuar.</div>
+          </div>
+          <div class="question-card">
+            <label class="prompt">Em caso de emergência climática, estaria disposto a ser voluntário?</label>
+            <div class="option-grid two">
+              <label class="option"><input type="radio" name="entry.195919880" value="Sim" required /> Sim</label>
+              <label class="option"><input type="radio" name="entry.195919880" value="Não" /> Não</label>
+            </div>
+            <div class="question-error">Escolha uma opção para continuar.</div>
+          </div>
+          <div class="question-card">
+            <label class="prompt">Possui algum equipamento útil em emergências?</label>
+            <div class="option-grid">
+              <label class="option"><input type="checkbox" name="entry.1644086223" value="Veículo de grande porte (Caminhonete, furgão, van)" required /> Veículo de grande porte</label>
+              <label class="option"><input type="checkbox" name="entry.1644086223" value="Barco, caiaque ou bote" /> Barco, caiaque ou bote</label>
+              <label class="option"><input type="checkbox" name="entry.1644086223" value="Gerador de energia" /> Gerador de energia</label>
+              <label class="option"><input type="checkbox" name="entry.1644086223" value="Ferramentas pesadas (motosserras, bombas d'água, lavadoras de alta pressão)" /> Ferramentas pesadas</label>
+              <label class="option"><input type="checkbox" name="entry.1644086223" value="Starlink ou rádio comunicador" /> Starlink ou rádio comunicador</label>
+              <label class="option"><input type="checkbox" name="entry.1644086223" value="Equipamentos de primeiros socorros ou formação na área de saúde" /> Primeiros socorros ou formação em saúde</label>
+              <label class="option"><input type="checkbox" name="entry.1644086223" value="__other_option__" data-other="outro_equipamento" /> Outro equipamento</label>
+            </div>
+            <input type="text" id="outro_equipamento" class="other-input" name="entry.1644086223.other_option_response" placeholder="Especifique qual..." />
+            <div class="question-error">Marque pelo menos uma opção para continuar.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="section-head">
+          <div class="section-kicker">Seção 5</div>
+          <h2>Família e talentos</h2>
+        </div>
+        <div class="questions">
+          <div class="question-card">
+            <label class="prompt">Possui talentos ou habilidades que gostaria de compartilhar nas atividades da Ala?</label>
+            <div class="option-grid">
+              <label class="option"><input type="checkbox" name="entry.628495369" value="Música (tocar instrumentos ou cantar)" required /> Música</label>
+              <label class="option"><input type="checkbox" name="entry.628495369" value="Esportes ou recreação" /> Esportes ou recreação</label>
+              <label class="option"><input type="checkbox" name="entry.628495369" value="Culinária" /> Culinária</label>
+              <label class="option"><input type="checkbox" name="entry.628495369" value="Artes, decoração ou artesanato" /> Artes, decoração ou artesanato</label>
+              <label class="option"><input type="checkbox" name="entry.628495369" value="Tecnologia, som ou fotografia" /> Tecnologia, som ou fotografia</label>
+              <label class="option"><input type="checkbox" name="entry.628495369" value="__other_option__" data-other="outro_talento" /> Outro</label>
+            </div>
+            <input type="text" id="outro_talento" class="other-input" name="entry.628495369.other_option_response" placeholder="Qual?" />
+            <div class="question-error">Marque pelo menos uma opção para continuar.</div>
+          </div>
+          <div class="question-card">
+            <label class="prompt" for="filhos-saude">Há alguma restrição alimentar, condição de saúde ou neurodiversidade de seus filhos que devemos saber?</label>
+            <textarea id="filhos-saude" name="entry.491198492" placeholder="Seus comentários..."></textarea>
+            <div class="question-error">Revise esta resposta.</div>
+          </div>
+          <div class="question-card">
+            <label class="prompt" for="filhos-atividade">Qual é o maior desafio para a participação de seus filhos nas atividades durante a semana?</label>
+            <textarea id="filhos-atividade" name="entry.676693267" placeholder="Seus comentários..."></textarea>
+            <div class="question-error">Revise esta resposta.</div>
+          </div>
+          <div class="question-card">
+            <label class="prompt" for="apoio">O que o Bispado, Quórum ou Sociedade de Socorro poderiam fazer para apoiar melhor você?</label>
+            <textarea id="apoio" name="entry.936912582" placeholder="Deixe sua sugestão ou pedido de ajuda..." required></textarea>
+            <div class="question-error">Escreva uma resposta para continuar.</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="form-nav" id="form-nav">
+        <button type="button" class="btn ghost" id="prev-question">Voltar</button>
+        <button type="button" class="btn" id="next-question">Próxima</button>
+      </div>
+      <p class="step-note" id="step-note">As perguntas obrigatórias precisam ser respondidas antes de avançar.</p>
+
+      <div class="closing-actions">
+        <p class="privacy-note">As respostas serão enviadas ao formulário da Ala. O nome continua opcional.</p>
+        <button type="submit" class="btn btn-submit">Enviar minhas respostas</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const form = document.querySelector("form");
+const progressBar = document.getElementById("progress-bar");
+const progressCount = document.getElementById("progress-count");
+const progressLabel = document.getElementById("progress-label");
+const questions = Array.from(document.querySelectorAll(".question-card"));
+const sections = Array.from(document.querySelectorAll(".section-card"));
+const nav = document.getElementById("form-nav");
+const prevButton = document.getElementById("prev-question");
+const nextButton = document.getElementById("next-question");
+const stepNote = document.getElementById("step-note");
+const closingActions = document.querySelector(".closing-actions");
+const optionalNames = new Set([
+  "entry.1650923594",
+  "entry.491198492",
+  "entry.676693267",
+  "entry.1333695524.other_option_response",
+  "entry.1644086223.other_option_response",
+  "entry.628495369.other_option_response",
+]);
+let currentQuestion = 0;
+
+document.querySelectorAll("[required]").forEach((field) => field.removeAttribute("required"));
+
+form.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && event.target.tagName !== "TEXTAREA") {
+    event.preventDefault();
+  }
+});
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const firstInvalid = questions.findIndex((question) => !isQuestionValid(question));
+  if (firstInvalid >= 0) {
+    showQuestion(firstInvalid, { validate: true });
+    return;
+  }
+  submitted = true;
+  form.querySelector(".btn-submit").innerText = "Enviando...";
+  HTMLFormElement.prototype.submit.call(form);
+});
+
+document.getElementById("start-survey").addEventListener("click", (event) => {
+  event.preventDefault();
+  showQuestion(0);
+});
+document.getElementById("jump-ministering").addEventListener("click", (event) => {
+  event.preventDefault();
+  const index = questions.findIndex((question) => question.closest("#sec-ministerio"));
+  showQuestion(index >= 0 ? index : 0);
+});
+
+prevButton.addEventListener("click", () => showQuestion(Math.max(0, currentQuestion - 1)));
+nextButton.addEventListener("click", () => {
+  if (!isQuestionValid(questions[currentQuestion])) {
+    markInvalid(questions[currentQuestion]);
+    return;
+  }
+  showQuestion(Math.min(questions.length, currentQuestion + 1));
+});
+
+document.querySelectorAll("form input, form select, form textarea").forEach((field) => {
+  field.addEventListener("input", updateProgress);
+  field.addEventListener("input", () => {
+    const question = field.closest(".question-card");
+    if (question && isQuestionValid(question)) question.classList.remove("invalid");
+  });
+  field.addEventListener("change", () => {
+    updateProgress();
+    const question = field.closest(".question-card");
+    if (question && isQuestionValid(question)) question.classList.remove("invalid");
+  });
+});
+
+document.querySelectorAll("[data-other]").forEach((field) => {
+  field.addEventListener("change", () => {
+    const target = document.getElementById(field.dataset.other);
+    if (target) target.style.display = field.checked ? "block" : "none";
+  });
+});
+
+function showQuestion(index, options = {}) {
+  currentQuestion = Math.max(0, Math.min(index, questions.length));
+  const finished = currentQuestion >= questions.length;
+
+  questions.forEach((question, questionIndex) => {
+    question.classList.toggle("active", questionIndex === currentQuestion && !finished);
+    if (!options.validate) question.classList.remove("invalid");
+  });
+
+  sections.forEach((section) => {
+    const hasActiveQuestion = section.querySelector(".question-card.active");
+    section.classList.toggle("active", Boolean(hasActiveQuestion));
+  });
+
+  nav.style.display = finished ? "none" : "grid";
+  stepNote.style.display = finished ? "none" : "block";
+  closingActions.classList.toggle("active", finished);
+  prevButton.style.visibility = currentQuestion === 0 ? "hidden" : "visible";
+  nextButton.textContent = currentQuestion === questions.length - 1 ? "Revisar e enviar" : "Próxima";
+
+  updateProgress();
+  document.getElementById("form-container").scrollIntoView({ behavior: "smooth", block: "start" });
+
+  if (!finished) {
+    if (options.validate) markInvalid(questions[currentQuestion]);
+    const firstControl = questions[currentQuestion].querySelector("input, select, textarea");
+    if (firstControl) setTimeout(() => firstControl.focus({ preventScroll: true }), 120);
+  }
+}
+
+function getQuestionControls(question) {
+  return Array.from(question.querySelectorAll("input, select, textarea"))
+    .filter((field) => !field.classList.contains("other-input"));
+}
+
+function isQuestionOptional(question) {
+  const controls = getQuestionControls(question);
+  return controls.every((field) => optionalNames.has(field.name));
+}
+
+function isQuestionValid(question) {
+  if (!question || isQuestionOptional(question)) return true;
+  const controls = getQuestionControls(question);
+  if (!controls.length) return true;
+  const first = controls[0];
+
+  if (first.type === "checkbox" || first.type === "radio") {
+    return controls.some((field) => field.checked);
+  }
+
+  return controls.some((field) => String(field.value || "").trim().length > 0);
+}
+
+function markInvalid(question) {
+  question.classList.remove("invalid");
+  void question.offsetWidth;
+  question.classList.add("invalid");
+}
+
+function updateProgress() {
+  const total = questions.length || 1;
+  const visibleStep = Math.min(currentQuestion + 1, total);
+  const percent = currentQuestion >= total
+    ? 100
+    : Math.round((currentQuestion / total) * 100);
+
+  progressBar.style.width = `${Math.max(4, percent)}%`;
+  progressCount.textContent = currentQuestion >= total ? "100%" : `${percent}%`;
+  progressLabel.textContent = currentQuestion >= total
+    ? "Pronto para enviar"
+    : `Pergunta ${visibleStep} de ${total}`;
+}
+
+showQuestion(0);
+</script>
+</body>
+</html>
